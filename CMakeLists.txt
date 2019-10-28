@@ -17,6 +17,7 @@ set(CMAKE_AUTORCC ON)
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
 find_package(Qt5Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Network REQUIRED)
 qt5_wrap_cpp(MOC src/j_state_pub.h)
 qt5_wrap_ui(UIC src/j_state_pub.ui)
 
@@ -57,4 +58,5 @@ include_directories(
 ## Declare a C++ executable
 add_executable(${PROJECT_NAME}_node src/main.cpp src/j_state_pub.cpp src/j_state_pub.h src/j_state_pub.ui)
 target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} Qt5::Network)
 
