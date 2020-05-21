@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
-project(j_state_pub)
+project(exo_teleop_control)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -56,7 +56,7 @@ include_directories(
 )
 
 ## Declare a C++ executable
-add_executable(${PROJECT_NAME}_node src/main.cpp src/j_state_pub.cpp src/j_state_pub.h src/j_state_pub.ui)
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} Qt5::Widgets)
-target_link_libraries(${PROJECT_NAME}_node ${catkin_LIBRARIES} Qt5::Network)
+add_executable(${PROJECT_NAME} src/main.cpp src/j_state_pub.cpp src/j_state_pub.h src/j_state_pub.ui)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} Qt5::Widgets)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} Qt5::Network)
 
