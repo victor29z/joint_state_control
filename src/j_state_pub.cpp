@@ -2,6 +2,7 @@
 #include "ui_j_state_pub.h"
 #include <QtMath>
 #include <iostream>
+#include<QDateTime>
 #define FROM_MASTER_HAND_PORT  12625
 #define TO_MASTER_HAND_PORT 17362
 #define TO_SLAVE_PORT 9191
@@ -121,9 +122,13 @@ j_state_pub::j_state_pub(QWidget *parent) :
         joint_data.joint_force[i] = 0;
     }
 
-    dat_log = new QFile("/home/zl/dat_log");
+    dat_log = new QFile("/home/robot/dat_log");
     dat_log->open(QIODevice::ReadWrite | QIODevice::Text);
     dat_log->seek(0);
+
+    waist_lr = 0;
+    waist_ud = 0;
+
 }
 
 j_state_pub::~j_state_pub()
@@ -143,36 +148,63 @@ void j_state_pub::timer_out(void){
         joint_state.position[i] = tmp / 100.0;
     }
 
-    //left
-    if(cbox[0]->isChecked())
-    {joint_state.position[2] = dh_angle[0];s.setNum((float)(dh_angle[0]));le_dhangle[2]->setText(s);}//show the actual command data that was sent to slave joint
-    if(cbox[1]->isChecked())
-    {joint_state.position[3] = dh_angle[1];s.setNum((float)(dh_angle[1]));le_dhangle[3]->setText(s);}
-    if(cbox[2]->isChecked())
-    {joint_state.position[4] = dh_angle[2];s.setNum((float)(dh_angle[2]));le_dhangle[4]->setText(s);}
-    if(cbox[3]->isChecked())
-    {joint_state.position[5] = dh_angle[3];s.setNum((float)(dh_angle[3]));le_dhangle[5]->setText(s);}
-    if(cbox[4]->isChecked())
-    {joint_state.position[6] = dh_angle[4];s.setNum((float)(dh_angle[4]));le_dhangle[6]->setText(s);}
-    if(cbox[5]->isChecked())
-    {joint_state.position[7] = dh_angle[5];s.setNum((float)(dh_angle[5]));le_dhangle[7]->setText(s);}
-    if(cbox[6]->isChecked())
-    {joint_state.position[8] = dh_angle[6];s.setNum((float)(dh_angle[6]));le_dhangle[8]->setText(s);}
     //right
-    if(cbox[7]->isChecked())
-    {joint_state.position[11] = dh_angle[8];s.setNum((float)(dh_angle[8]));le_dhangle[11]->setText(s);}
-    if(cbox[8]->isChecked())
-    {joint_state.position[12] = dh_angle[9];s.setNum((float)(dh_angle[9]));le_dhangle[12]->setText(s);}
-    if(cbox[9]->isChecked())
-    {joint_state.position[13] = dh_angle[10];s.setNum((float)(dh_angle[10]));le_dhangle[13]->setText(s);}
-    if(cbox[10]->isChecked())
-    {joint_state.position[14] = dh_angle[11];s.setNum((float)(dh_angle[11]));le_dhangle[14]->setText(s);}
-    if(cbox[11]->isChecked())
-    {joint_state.position[15] = dh_angle[12];s.setNum((float)(dh_angle[12]));le_dhangle[15]->setText(s);}
-    if(cbox[12]->isChecked())
-    {joint_state.position[16] = dh_angle[13];s.setNum((float)(dh_angle[13]));le_dhangle[16]->setText(s);}
-    if(cbox[13]->isChecked())
-    {joint_state.position[17] = dh_angle[14];s.setNum((float)(dh_angle[14]));le_dhangle[17]->setText(s);}
+    if(handle_data.right.enable_key){
+        if(cbox[0]->isChecked())
+        {joint_state.position[2] = dh_angle[0];s.setNum((float)(dh_angle[0]));le_dhangle[2]->setText(s);}//show the actual command data that was sent to slave joint
+        if(cbox[1]->isChecked())
+        {joint_state.position[3] = dh_angle[1];s.setNum((float)(dh_angle[1]));le_dhangle[3]->setText(s);}
+        if(cbox[2]->isChecked())
+        {joint_state.position[4] = dh_angle[2];s.setNum((float)(dh_angle[2]));le_dhangle[4]->setText(s);}
+        if(cbox[3]->isChecked())
+        {joint_state.position[5] = dh_angle[3];s.setNum((float)(dh_angle[3]));le_dhangle[5]->setText(s);}
+        if(cbox[4]->isChecked())
+        {joint_state.position[6] = dh_angle[4];s.setNum((float)(dh_angle[4]));le_dhangle[6]->setText(s);}
+        if(cbox[5]->isChecked())
+        {joint_state.position[7] = dh_angle[5];s.setNum((float)(dh_angle[5]));le_dhangle[7]->setText(s);}
+        if(cbox[6]->isChecked())
+        {joint_state.position[8] = dh_angle[6];s.setNum((float)(dh_angle[6]));le_dhangle[8]->setText(s);}
+        //hand control
+        if(handle_data.right.buttom_key)
+            {joint_state.position[9] = -0.5;joint_state.position[10] = 0.5;}
+
+
+
+    }
+    // use right handle joystick to control waist joint
+    if(handle_data.right.joystick_lr < 0x600)
+        if(waist_lr < 1.57)waist_lr+=0.02;
+    if(handle_data.right.joystick_lr > 0xa00)
+        if(waist_lr > -1.57)waist_lr-=0.02;
+    joint_state.position[0] = waist_lr;
+
+    if(handle_data.right.joystick_ud < 0x600)
+        if(waist_ud < 1.57)waist_ud-=0.02;
+    if(handle_data.right.joystick_ud > 0xa00)
+        if(waist_ud > -1.57)waist_ud+=0.02;
+    joint_state.position[1] = waist_ud;
+    //left
+    if(handle_data.left.enable_key){
+        if(cbox[7]->isChecked())
+        {joint_state.position[11] = dh_angle[8];s.setNum((float)(dh_angle[8]));le_dhangle[11]->setText(s);}
+        if(cbox[8]->isChecked())
+        {joint_state.position[12] = dh_angle[9];s.setNum((float)(dh_angle[9]));le_dhangle[12]->setText(s);}
+        if(cbox[9]->isChecked())
+        {joint_state.position[13] = dh_angle[10];s.setNum((float)(dh_angle[10]));le_dhangle[13]->setText(s);}
+        if(cbox[10]->isChecked())
+        {joint_state.position[14] = dh_angle[11];s.setNum((float)(dh_angle[11]));le_dhangle[14]->setText(s);}
+        if(cbox[11]->isChecked())
+        {joint_state.position[15] = dh_angle[12];s.setNum((float)(dh_angle[12]));le_dhangle[15]->setText(s);}
+        if(cbox[12]->isChecked())
+        {joint_state.position[16] = dh_angle[13];s.setNum((float)(dh_angle[13]));le_dhangle[16]->setText(s);}
+        if(cbox[13]->isChecked())
+        {joint_state.position[17] = dh_angle[14];s.setNum((float)(dh_angle[14]));le_dhangle[17]->setText(s);}
+        //hand control
+        if(handle_data.left.buttom_key)
+            {joint_state.position[18] = -0.5;joint_state.position[19] = -0.5;}
+
+    }
+
 
 
     jointstates_publisher.publish(joint_state);
@@ -231,6 +263,22 @@ void j_state_pub::slave_hand_recv(){
         //qDebug() << i<<"--"<< joint_data.joint_pos_abs[i]<<endl;
         //qDebug() << i<<"--"<< j_angle[i]<<endl;
     }
+    //read handle value
+    handle_data.left.top_key1 = joint_data.keyvalue[15] & KEY_MASK_TOPKEY1;
+    handle_data.left.top_key2 = joint_data.keyvalue[15] & KEY_MASK_TOPKEY2;
+    handle_data.left.top_key3 = joint_data.keyvalue[15] & KEY_MASK_TOPKEY3;
+    handle_data.left.buttom_key = joint_data.keyvalue[15] & KEY_MASK_BUTKEY;
+    handle_data.left.enable_key = joint_data.keyvalue[15] & KEY_MASK_ENABLEKEY;
+    handle_data.left.joystick_lr = joint_data.joint_pos_raw[15] & JOYSTICK_LR_MUSK;
+    handle_data.left.joystick_ud = (joint_data.joint_pos_raw[15] & JOYSTICK_UD_MUSK) >> 12;
+
+    handle_data.right.top_key3 = joint_data.keyvalue[7] & KEY_MASK_TOPKEY1;
+    handle_data.right.top_key2 = joint_data.keyvalue[7] & KEY_MASK_TOPKEY2;
+    handle_data.right.top_key1 = joint_data.keyvalue[7] & KEY_MASK_TOPKEY3;
+    handle_data.right.buttom_key = joint_data.keyvalue[7] & KEY_MASK_BUTKEY;
+    handle_data.right.enable_key = joint_data.keyvalue[7] & KEY_MASK_ENABLEKEY;
+    handle_data.right.joystick_lr = joint_data.joint_pos_raw[7] & JOYSTICK_LR_MUSK;
+    handle_data.right.joystick_ud = (joint_data.joint_pos_raw[7] & JOYSTICK_UD_MUSK) >> 12;
     double cos_alpha = qCos(qDegreesToRadians(35.0));
     double sin_alpha = qSin(qDegreesToRadians(35.0));
 
@@ -299,25 +347,27 @@ void j_state_pub::slave_hand_recv(){
     dh_angle[9] = asin(Matptr[6]);
     dh_angle[10] = -atan2(Matptr[0],Matptr[3]);
 
-/*    out << ++serial_nm << ","
-        << theta_r1 << ","
-        << theta_r2 << ","
-        << theta_r3 << ","
-        << dh_angle[8] << ","
-        << dh_angle[9] << ","
-        << dh_angle[10] << ","
-        <<endl;
-    out.flush();
-    */
+
     dh_angle[11] = j_angle[11] + M_PI_2;
     dh_angle[12] = -j_angle[12];
     dh_angle[13] = j_angle[13] ;
     dh_angle[14] = -j_angle[14] ;
 
-
+    QDateTime dateTime = QDateTime::currentDateTime();
+    // 字符串格式化
+    QString timestamp = dateTime.toString("yyyy-MM-dd hh:mm:ss.zzz");
+    // 获取毫秒值
+    int ms = dateTime.time().msec();
+    // 转换成时间戳
+    qint64 epochTime = dateTime.toMSecsSinceEpoch();
+    out <<serial_nm++<<","<< epochTime << ",";
     for(i = 0; i < 16; i++){
         qDebug() << i<<"--"<< j_angle[i] << "--" <<dh_angle[i]<<endl;
+        out << dh_angle[i] << ",";
+
     }
+    out << endl;
+    out.flush();
     // qDebug() << recv_frame.joint_force;
    /*
 

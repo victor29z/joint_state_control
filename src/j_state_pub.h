@@ -67,6 +67,10 @@ private:
     QFile *dat_log;
 
     sensor_msgs::JointState joint_state;
+    HANDLE_DAT_TYPE handle_data;
+
+    float waist_lr,waist_ud;
+
 
 
 
