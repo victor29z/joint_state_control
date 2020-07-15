@@ -181,20 +181,20 @@ void j_state_pub::timer_out(void){
 	joint_state.header.stamp = ros::Time::now();
 	joint_state.name.resize(14);
 	joint_state.position.resize(14);
-    joint_state.name[0] = "joint-r1";
-    joint_state.name[1] = "joint-r2";
-    joint_state.name[2] = "joint-r3";
-    joint_state.name[3] = "joint-r4";
-    joint_state.name[4] = "joint-r5";
-    joint_state.name[5] = "joint-r6";
-    joint_state.name[6] = "joint-r7";
-    joint_state.name[7] = "joint-l1";
-    joint_state.name[8] = "joint-l2";
-    joint_state.name[9] = "joint-l3";
-    joint_state.name[10] = "joint-l4";
-    joint_state.name[11] = "joint-l5";
-    joint_state.name[12] = "joint-l6";
-    joint_state.name[13] = "joint-l7";
+    joint_state.name[0] = "joint-l1";
+    joint_state.name[1] = "joint-l2";
+    joint_state.name[2] = "joint-l3";
+    joint_state.name[3] = "joint-l4";
+    joint_state.name[4] = "joint-l5";
+    joint_state.name[5] = "joint-l6";
+    joint_state.name[6] = "joint-l7";
+    joint_state.name[7] = "joint-r1";
+    joint_state.name[8] = "joint-r2";
+    joint_state.name[9] = "joint-r3";
+    joint_state.name[10] = "joint-r4";
+    joint_state.name[11] = "joint-r5";
+    joint_state.name[12] = "joint-r6";
+    joint_state.name[13] = "joint-r7";
 
     for(i = 0; i < 14; i++){
         int tmp = slider[i]->value();
