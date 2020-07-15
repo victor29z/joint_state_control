@@ -1,10 +1,12 @@
 #include "j_state_pub.h"
 #include <QApplication>
 #include <iostream>
+#include <QDir>
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     j_state_pub w;
+    QDir::setCurrent(a.applicationDirPath());
     std::cout << "arc="<<argc<<std::endl;
     //std::cout << "argv[1]="<<argv[1]<<std::endl;
     if (argc >1 )

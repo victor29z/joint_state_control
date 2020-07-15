@@ -128,6 +128,10 @@ j_state_pub::j_state_pub(QWidget *parent) :
 
     waist_lr = 0;
     waist_ud = 0;
+    joint_data.keyvalue[7] = 0;
+    joint_data.keyvalue[15] = 0;
+    handle_data.right.joystick_lr = 0x850;
+    handle_data.right.joystick_ud = 0x850;
 
 }
 
@@ -172,17 +176,22 @@ void j_state_pub::timer_out(void){
 
     }
     // use right handle joystick to control waist joint
-    if(handle_data.right.joystick_lr < 0x600)
-        if(waist_lr < 1.57)waist_lr+=0.02;
-    if(handle_data.right.joystick_lr > 0xa00)
-        if(waist_lr > -1.57)waist_lr-=0.02;
-    joint_state.position[0] = waist_lr;
+   if(cbox_select_all->isChecked()){
+       if(handle_data.right.joystick_lr < 0x600)
+           if(waist_lr < 1.57)waist_lr+=0.02;
+       if(handle_data.right.joystick_lr > 0xa00)
+           if(waist_lr > -1.57)waist_lr-=0.02;
+       joint_state.position[0] = waist_lr;
 
-    if(handle_data.right.joystick_ud < 0x600)
-        if(waist_ud < 1.57)waist_ud-=0.02;
-    if(handle_data.right.joystick_ud > 0xa00)
-        if(waist_ud > -1.57)waist_ud+=0.02;
-    joint_state.position[1] = waist_ud;
+       if(handle_data.right.joystick_ud < 0x600)
+           if(waist_ud < 1.57)waist_ud-=0.02;
+       if(handle_data.right.joystick_ud > 0xa00)
+           if(waist_ud > -1.57)waist_ud+=0.02;
+       joint_state.position[1] = waist_ud;
+
+
+   }
+
     //left
     if(handle_data.left.enable_key){
         if(cbox[7]->isChecked())
@@ -208,9 +217,10 @@ void j_state_pub::timer_out(void){
 
 
     jointstates_publisher.publish(joint_state);
+    /*
     if(joint_data.keyvalue[7]) dh_angle[7] = 1.0;
     else dh_angle[7] = 0;
-
+*/
     fromMasterHand->writeDatagram((char*)(&joint_data),sizeof(JOINT_DAT_TYPE),QHostAddress(master_addr),TO_MASTER_HAND_PORT);
     toSlaveSock->writeDatagram((char*)(&dh_angle),sizeof(dh_angle),QHostAddress("127.0.0.1"),TO_SLAVE_PORT);
 
@@ -220,6 +230,7 @@ void j_state_pub::timer_out(void){
 void j_state_pub::get_configuration(){
     int i;
     cfg = new QFile("/home/robot/paramlist.cfg");
+    //cfg = new QFile("./paramlist.cfg");
     cfg->open(QIODevice::ReadWrite | QIODevice::Text);
     cfg->seek(0);
     QTextStream in(cfg);
