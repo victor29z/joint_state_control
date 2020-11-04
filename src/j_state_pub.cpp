@@ -132,6 +132,8 @@ j_state_pub::j_state_pub(QWidget *parent) :
     joint_data.keyvalue[15] = 0;
     handle_data.right.joystick_lr = 0x850;
     handle_data.right.joystick_ud = 0x850;
+    //select_all_checked(true);
+    cbox_select_all->setChecked(true);
 
 }
 
@@ -251,7 +253,7 @@ void j_state_pub::slave_hand_recv(){
     JOINT_DAT_TYPE recv_frame;
     int i;
     Matrix3d r1,r2,r3,BaseRot_L,BaseRot_R,Re_L,Re_R;
-    QTextStream out(dat_log);
+    QTextStream log_out(dat_log);
     static long int serial_nm = 0;
     BaseRot_L<<
                 0, 1, 0,
@@ -308,7 +310,8 @@ void j_state_pub::slave_hand_recv(){
 
     double theta_cr = atan2(tan(theta_r2 ) , cos(theta_r1));
     AngleAxisd rotr1(-theta_r1, Vector3d(0, 1, 0));
-    AngleAxisd rotr2(theta_cr, Vector3d(1, 0, 0));
+    //AngleAxisd rotr2(theta_cr, Vector3d(1, 0, 0));
+    AngleAxisd rotr2(theta_r2, Vector3d(1, 0, 0));
     AngleAxisd rotr3(-theta_r3, Vector3d(0, 0, 1));
     Re_R = rotr1.matrix() * BaseRot_R * rotr2.matrix() * rotr3.matrix();
     double *MatptrR = Re_R.data();
@@ -317,10 +320,10 @@ void j_state_pub::slave_hand_recv(){
     //std::cout<<"cos_t1="<< cos(theta_r1) <<"cos_t2="<< cos(theta_r2) <<"theta_cr="<< theta_cr << "Rotation2"<<std::endl<< rot2.matrix() <<std::endl;
     //std::cout<< "Rotation3"<<std::endl<< rot3.matrix() <<std::endl;
 
-    dh_angle[0] = -atan(MatptrR[1] / MatptrR[2]);
+    dh_angle[0] = -atan2(MatptrR[1] , MatptrR[2])-M_PI;
     dh_angle[1] = asin(MatptrR[0]);
-    dh_angle[2] = -atan(MatptrR[3] / MatptrR[6]);
-
+    dh_angle[2] = -atan2(MatptrR[3] , MatptrR[6]) -M_PI;
+qDebug() <<"Mat(3)"<<MatptrR[3]<<",Mat(6)"<<MatptrR[6]<<endl;
 
     //dh_angle[0] = j_angle[0] - j_angle[1]  / 2.0 ;
     //dh_angle[1] = 4.0 * qAcos( cos_alpha / qCos(qAcos(cos_alpha * cos_alpha + sin_alpha * sin_alpha * qCos(j_angle[1] + J_ANG_1_MOD)) / 2.0)) - M_PI_2;
@@ -344,17 +347,19 @@ void j_state_pub::slave_hand_recv(){
 
     theta_cr = atan2(tan(theta_r2 ) , cos(theta_r1));
     AngleAxisd rotl1(-theta_r1, Vector3d(0, 1, 0));
-    AngleAxisd rotl2(theta_cr, Vector3d(0, 0, 1));
+    //AngleAxisd rotl2(theta_cr, Vector3d(0, 0, 1));
+    AngleAxisd rotl2(theta_r2, Vector3d(0, 0, 1));
     AngleAxisd rotl3(-theta_r3, Vector3d(0, 1, 0));
     Re_L = rotl1.matrix() * BaseRot_L * rotl2.matrix() * rotl3.matrix();
     double *Matptr = Re_L.data();
 
-    std::cout<< "Rotation1"<<std::endl<< rotl1.matrix() <<std::endl;
-    std::cout<<"cos_t1="<< cos(theta_r1) <<"cos_t2="<< cos(theta_r2) <<"theta_cr="<< theta_cr << "Rotation2"<<std::endl<< rotl2.matrix() <<std::endl;
-    std::cout<< "Rotation3"<<std::endl<< rotl3.matrix() <<std::endl;
+    //std::cout<< "Rotation1"<<std::endl<< rotl1.matrix() <<std::endl;
+    //std::cout<<"cos_t1="<< cos(theta_r1) <<"cos_t2="<< cos(theta_r2) <<"theta_cr="<< theta_cr << "Rotation2"<<std::endl<< rotl2.matrix() <<std::endl;
+    //std::cout<< "Rotation3"<<std::endl<< rotl3.matrix() <<std::endl;
+//std::cout<<"theta_r2="<< theta_r2 <<std::endl<<"theta_cr="<< theta_cr<<std::endl;
 
-
-    dh_angle[8] = atan(-Matptr[7] / Matptr[8]);
+    dh_angle[8] = atan2(-Matptr[7] , Matptr[8]) - M_PI;
+    //qDebug() <<"Mat(7)"<<Matptr[7]<<",Mat(8)"<<Matptr[8]<<endl;
     dh_angle[9] = asin(Matptr[6]);
     dh_angle[10] = -atan2(Matptr[0],Matptr[3]);
 
@@ -363,7 +368,14 @@ void j_state_pub::slave_hand_recv(){
     dh_angle[12] = -j_angle[12];
     dh_angle[13] = j_angle[13] ;
     dh_angle[14] = -j_angle[14] ;
+/*print debug infromation*/
+    for(i = 0; i < 16; i++){
+        qDebug() << i<<"--"<< j_angle[i] << "--" <<dh_angle[i]<<endl;
 
+    }
+
+    if(!handle_data.right.enable_key) return;
+    /*output debug log*/
     QDateTime dateTime = QDateTime::currentDateTime();
     // 字符串格式化
     QString timestamp = dateTime.toString("yyyy-MM-dd hh:mm:ss.zzz");
@@ -371,14 +383,14 @@ void j_state_pub::slave_hand_recv(){
     int ms = dateTime.time().msec();
     // 转换成时间戳
     qint64 epochTime = dateTime.toMSecsSinceEpoch();
-    out <<serial_nm++<<","<< epochTime << ",";
+    log_out <<serial_nm++<<","<< epochTime << ",";
     for(i = 0; i < 16; i++){
         qDebug() << i<<"--"<< j_angle[i] << "--" <<dh_angle[i]<<endl;
-        out << dh_angle[i] << ",";
+        log_out << dh_angle[i] << ",";
 
     }
-    out << endl;
-    out.flush();
+    log_out << endl;
+    log_out.flush();
     // qDebug() << recv_frame.joint_force;
    /*
 

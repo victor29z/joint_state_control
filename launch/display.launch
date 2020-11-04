@@ -18,7 +18,7 @@
     name="exo_teleop_control"
     pkg="exo_teleop_control"
     type="exo_teleop_control"
-    args="192.168.0.202 17362"
+    args="192.168.0.203 17362"
     output="screen" />
   <node
     name="robot_state_publisher"
