@@ -320,10 +320,17 @@ void j_state_pub::slave_hand_recv(){
     //std::cout<<"cos_t1="<< cos(theta_r1) <<"cos_t2="<< cos(theta_r2) <<"theta_cr="<< theta_cr << "Rotation2"<<std::endl<< rot2.matrix() <<std::endl;
     //std::cout<< "Rotation3"<<std::endl<< rot3.matrix() <<std::endl;
 
-    dh_angle[0] = -atan2(MatptrR[1] , MatptrR[2])-M_PI;
+    dh_angle[0] = -atan2(MatptrR[1] , MatptrR[2]) -M_PI;
+    if(dh_angle[0] > M_PI) dh_angle[0] -= M_PI*2;
+    if(dh_angle[0] < -M_PI) dh_angle[0] += M_PI*2;
+
+
     dh_angle[1] = asin(MatptrR[0]);
     dh_angle[2] = -atan2(MatptrR[3] , MatptrR[6]) -M_PI;
-qDebug() <<"Mat(3)"<<MatptrR[3]<<",Mat(6)"<<MatptrR[6]<<endl;
+    if(dh_angle[2] > M_PI) dh_angle[2] -= M_PI*2;
+    if(dh_angle[2] < -M_PI) dh_angle[2] += M_PI*2;
+
+//qDebug() <<"Mat(3)"<<MatptrR[3]<<",Mat(6)"<<MatptrR[6]<<endl;
 
     //dh_angle[0] = j_angle[0] - j_angle[1]  / 2.0 ;
     //dh_angle[1] = 4.0 * qAcos( cos_alpha / qCos(qAcos(cos_alpha * cos_alpha + sin_alpha * sin_alpha * qCos(j_angle[1] + J_ANG_1_MOD)) / 2.0)) - M_PI_2;
@@ -359,9 +366,15 @@ qDebug() <<"Mat(3)"<<MatptrR[3]<<",Mat(6)"<<MatptrR[6]<<endl;
 //std::cout<<"theta_r2="<< theta_r2 <<std::endl<<"theta_cr="<< theta_cr<<std::endl;
 
     dh_angle[8] = atan2(-Matptr[7] , Matptr[8]) - M_PI;
+    if(dh_angle[8] > M_PI) dh_angle[8] -= M_PI*2;
+    if(dh_angle[8] < -M_PI) dh_angle[8] += M_PI*2;
+
     //qDebug() <<"Mat(7)"<<Matptr[7]<<",Mat(8)"<<Matptr[8]<<endl;
     dh_angle[9] = asin(Matptr[6]);
     dh_angle[10] = -atan2(Matptr[0],Matptr[3]);
+    if(dh_angle[10] > M_PI) dh_angle[10] -= M_PI*2;
+    if(dh_angle[10] < -M_PI) dh_angle[10] += M_PI*2;
+
 
 
     dh_angle[11] = j_angle[11] + M_PI_2;
