@@ -87,6 +87,7 @@ private slots:
 public:
 
     char master_addr[20];
+    bool use_master_topic;
     void Joint_State_Msg_Initialize(int size, char* joint_name_list[]);
     void setup_ui(void);
 };

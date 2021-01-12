@@ -66,7 +66,10 @@ const char* j_name_list[]={
     "joint-l4",
     "joint-l5",
     "joint-l6",
-    "joint-l7"
+    "joint-l7",
+    "right-hand",
+    "left-hand"
+
 };
 
 const int transfer_seq[14] = {0,1,2,3,4,5,6, 8,9,10,11,12,13,14};
@@ -88,14 +91,20 @@ j_state_pub::j_state_pub(QWidget *parent) :
         ROS_INFO("No master started!");
         this->close();
     }
+    //printf("argc=%d\n",argc);
+    //std::cout << "argv[1]="<<argv[1]<<std::endl;
 
     ros::start(); // explicitly needed since our nodehandle is going out of scope.
     ros::NodeHandle n;
     setup_ui();
     //build and initialize joint state publisher
-    jointstates_publisher = n.advertise<sensor_msgs::JointState>("master_joint_states", 1000);
-    Joint_State_Msg_Initialize(NO_OF_JOINTS,(char**)j_name_list);
 
+    //jointstates_publisher = n.advertise<sensor_msgs::JointState>("joint_states", 1000);
+
+    jointstates_publisher = n.advertise<sensor_msgs::JointState>("master_joint_states", 1000);
+    // add 2 hand control varible
+    Joint_State_Msg_Initialize(NO_OF_JOINTS + 2,(char**)j_name_list);
+    //Joint_State_Msg_Initialize(NO_OF_JOINTS,(char**)j_name_list);
 
 
     timer = new QTimer(this);
@@ -168,11 +177,11 @@ void j_state_pub::timer_out(void){
         {joint_state.position[5] = -dh_angle[5];s.setNum((float)(dh_angle[5]));le_dhangle[7]->setText(s);}
         if(cbox[6]->isChecked())
         {joint_state.position[6] = -dh_angle[6];s.setNum((float)(dh_angle[6]));le_dhangle[8]->setText(s);}
-        //hand control not applicable
-        /*
+
         if(handle_data.right.buttom_key)
-            {joint_state.position[9] = -0.5;joint_state.position[10] = 0.5;}
-*/
+            joint_state.position[14] = 1;
+        else
+            joint_state.position[14] = -1;
 
 
     }
@@ -219,14 +228,14 @@ void j_state_pub::timer_out(void){
     }
 
 
-
-    jointstates_publisher.publish(joint_state);
+    //if(handle_data.right.enable_key)
+        jointstates_publisher.publish(joint_state);
     /*
     if(joint_data.keyvalue[7]) dh_angle[7] = 1.0;
     else dh_angle[7] = 0;
 */
-    fromMasterHand->writeDatagram((char*)(&joint_data),sizeof(JOINT_DAT_TYPE),QHostAddress(master_addr),TO_MASTER_HAND_PORT);
-    toSlaveSock->writeDatagram((char*)(&dh_angle),sizeof(dh_angle),QHostAddress("127.0.0.1"),TO_SLAVE_PORT);
+    //fromMasterHand->writeDatagram((char*)(&joint_data),sizeof(JOINT_DAT_TYPE),QHostAddress(master_addr),TO_MASTER_HAND_PORT);
+    //toSlaveSock->writeDatagram((char*)(&dh_angle),sizeof(dh_angle),QHostAddress("127.0.0.1"),TO_SLAVE_PORT);
 
 }
 
@@ -298,7 +307,8 @@ void j_state_pub::slave_hand_recv(){
     double sin_alpha = qSin(qDegreesToRadians(35.0));
 
     QString s;
-
+    /*temp change for exo1*/
+    //j_angle[1] = - j_angle[1];
     double theta_r1 = j_angle[0] - j_angle[1]  / 2.0 ;
     double theta_r2 = 4.0 * qAcos( cos_alpha / qCos(qAcos(cos_alpha * cos_alpha + sin_alpha * sin_alpha * qCos(j_angle[1] + J_ANG_1_MOD)) / 2.0)) - M_PI_2;
     double theta_r3 = j_angle[2] + j_angle[1] / 2.0 ;
